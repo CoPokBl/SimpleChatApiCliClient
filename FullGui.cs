@@ -46,7 +46,7 @@ public static class FullGui {
         // Get messages from server
         IEnumerable<SimpleChatAppMessage> messages = client.GetMessages(15);
         // If there are no new messages, return
-        if (_lastMessages != null && _lastMessages.Equals(messages)) {
+        if (_lastMessages != null && MessagesEqual(_lastMessages, messages)) {
             return;
         }
         _lastMessages = messages;
@@ -85,5 +85,14 @@ public static class FullGui {
 
         return pass.ToString();
     }
+    
+    private static bool MessagesEqual(IEnumerable<SimpleChatAppMessage> a, IEnumerable<SimpleChatAppMessage> b) {
+        if (a.Count() != b.Count()) return false;
+        for (int i = 0; i < a.Count(); i++) {
+            if (!a.ElementAt(i).text.Equals(b.ElementAt(i).text)) return false;
+        }
+        return true;
+    }
+    
     
 }
