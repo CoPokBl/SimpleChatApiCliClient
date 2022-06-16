@@ -8,7 +8,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\SimpleChatAppLibrary\SimpleChatAppLibrary.csproj" />
+      <Reference Include="SimpleChatAppLibrary">
+        <HintPath>SimpleChatAppLibrary.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>
