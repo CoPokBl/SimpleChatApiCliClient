@@ -1,18 +1,19 @@
 using System.Text;
 using SimpleChatAppLibrary;
 
-namespace SimpleChatAppClient; 
+namespace SimpleChatAppClient;
 
 public static class FullGui {
-    
+
     private static string _currentlyTypedText = "";
     private static IEnumerable<SimpleChatAppMessage>? _lastMessages;
+    private static IEnumerable<string>? _lastUsers;
     private static SimpleChatAppLibrary.SimpleChatAppClient _client;
 
     public static void Start(SimpleChatAppLibrary.SimpleChatAppClient client) {
         _client = client;
         new Thread(ReaderThread).Start();
-        
+
         while (true) {
             string msg = PasswordTyping();
             _currentlyTypedText = "";
@@ -23,7 +24,7 @@ public static class FullGui {
                 Console.WriteLine("Error sending message: " + e.Message);
             }
         }
-        
+
     }
 
     private static void ReaderThread() {
@@ -41,26 +42,34 @@ public static class FullGui {
             Thread.Sleep(TimeSpan.FromSeconds(0.5));
         }
     }
-    
+
     private static void Cycle(SimpleChatAppLibrary.SimpleChatAppClient client) {
         // Get messages from server
         IEnumerable<SimpleChatAppMessage> messages = client.GetMessages(15);
+        IEnumerable<string> users = client.GetOnlineUsers();
         // If there are no new messages, return
-        if (_lastMessages != null && MessagesEqual(_lastMessages, messages)) {
+        if (_lastMessages != null && MessagesEqual(_lastMessages, messages) && _lastUsers != null && MessagesEqual(_lastUsers, users)) {
             return;
         }
         _lastMessages = messages;
+        _lastUsers = users;
         Console.Clear();
         foreach (SimpleChatAppMessage msg in messages) {
             Console.WriteLine($"{DateTime.FromBinary(msg.createdAt).ToLocalTime()}\n" +
                               $"{msg.creatorName}: {msg.text}\n");
         }
+
+        IEnumerable<string> onlineUsers = client.GetOnlineUsers();
+        // turn online users into a string
+        string onlineUsersString = onlineUsers.Aggregate("", (current, user) => current + (user + ", "));
+        onlineUsersString = onlineUsersString[..^2];
+        Console.WriteLine("Users Online: " + onlineUsersString);
         Console.Write("Message: " + _currentlyTypedText);
     }
-    
+
     private static string PasswordTyping() {
         StringBuilder pass = new ();
-            
+
         while (true) {
             ConsoleKeyInfo ki = Console.ReadKey(true);
 
@@ -75,7 +84,7 @@ public static class FullGui {
                 _currentlyTypedText = pass.ToString();
                 continue;
             }
-            
+
             Console.Write(ki.KeyChar);
 
             pass.Append(ki.KeyChar);
@@ -85,7 +94,7 @@ public static class FullGui {
 
         return pass.ToString();
     }
-    
+
     private static bool MessagesEqual(IEnumerable<SimpleChatAppMessage> a, IEnumerable<SimpleChatAppMessage> b) {
         if (a.Count() != b.Count()) return false;
         for (int i = 0; i < a.Count(); i++) {
@@ -94,5 +103,14 @@ public static class FullGui {
         return true;
     }
     
-    
+    // function to compare two lists of strings
+    private static bool MessagesEqual(IEnumerable<string> a, IEnumerable<string> b) {
+        if (a.Count() != b.Count()) return false;
+        for (int i = 0; i < a.Count(); i++) {
+            if (!a.ElementAt(i).Equals(b.ElementAt(i))) return false;
+        }
+        return true;
+    }
+
+
 }
