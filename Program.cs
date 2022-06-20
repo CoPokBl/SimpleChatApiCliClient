@@ -33,7 +33,7 @@ while (true) {
     Console.Write("Channel: ");
     string channel = Console.ReadLine();
 
-    SimpleChatAppLibrary.SimpleChatAppClient client = new(Prefs.GetString("ip", "https://chat.zaneharrison.com"), 
+    SimpleChatAppLibrary.SimpleChatAppClient client = new(Prefs.GetString("ip", "https://chat.zaneharrison.com"),
         Prefs.GetString("username", "Chatter"), channel);
 
     if (!client.TestConnection(out Exception ex)) {
@@ -46,5 +46,5 @@ while (true) {
         FullGui.Start(client);
     }
     catch (ExitException) { }
-    
+
 }

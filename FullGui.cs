@@ -19,6 +19,9 @@ public static class FullGui {
 
         while (true) {
             string msg = PasswordTyping();
+            if (Commands.ParseCommand(msg)) {
+              continue;
+            }
             msg = Commands.Emoticons(msg);
             _currentlyTypedText = "";
             try {
@@ -58,9 +61,9 @@ public static class FullGui {
         if (!_run) {
             throw new ExitException();
         }
-        
+
         // Get messages from server
-        IEnumerable<SimpleChatAppMessage> messages = client.GetMessages(15, 0, 
+        IEnumerable<SimpleChatAppMessage> messages = client.GetMessages(15, 0,
             bool.Parse(Prefs.GetString("online_status", "true")));
         IEnumerable<string> users = client.GetOnlineUsers();
         // If there are no new messages, return
@@ -120,7 +123,7 @@ public static class FullGui {
         }
         return true;
     }
-    
+
     // function to compare two lists of strings
     private static bool MessagesEqual(IEnumerable<string> a, IEnumerable<string> b) {
         if (a.Count() != b.Count()) return false;

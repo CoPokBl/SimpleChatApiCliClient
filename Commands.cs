@@ -1,4 +1,4 @@
-namespace SimpleChatAppClient; 
+namespace SimpleChatAppClient;
 
 public class Commands {
 
@@ -6,7 +6,7 @@ public class Commands {
         if (!text.StartsWith('/')) {
             return false;
         }
-        
+
         string[] words = text.Split(' ');
         string command = words[0].Remove(0,1);
         string[] args = new string[words.Length - 1];
@@ -55,5 +55,5 @@ public class Commands {
             _ => text
         };
     }
-    
+
 }
