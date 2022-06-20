@@ -3,33 +3,48 @@ using SimpleChatAppClient;
 
 Console.WriteLine("Starting...");
 
-// Ask for server ip
-string defaultServerIp = Prefs.GetString("ip", "https://chat.zaneharrison.com");
-Console.Write($"Enter server ip (default: {defaultServerIp}): ");
-string serverIp = Console.ReadLine();
-if (serverIp == "") {
-    serverIp = defaultServerIp;
-} else {
-    Prefs.SetString("ip", serverIp);
+if (Prefs.GetString("first_time", "true") == "true") {
+    Settings.FirstTimeSetup();
+    Prefs.SetString("first_time", "false");
     Prefs.Save();
 }
 
-// Ask for channel
-Console.Write("Channel: ");
-string channel = Console.ReadLine();
+while (true) {
 
-// Ask for username
-Console.Write("Username: ");
-string username = Console.ReadLine();
+    Console.Write("Options:\n" +
+                  "1. Start chat client\n" +
+                  "2. Settings\n" +
+                  "3. Exit\n" +
+                  "Enter your choice as a number: ");
+    char choice = Console.ReadKey(false).KeyChar;
+    Console.Write("\n");
 
-SimpleChatAppLibrary.SimpleChatAppClient client = new(serverIp, username, channel);
+    switch (choice) {
+        case '1':
+            break;
+        case '2':
+            Settings.Run();
+            continue;
+        case '3':
+            return 0;
+    }
 
-if (!client.TestConnection(out Exception ex)) {
-    Console.WriteLine("Connection failed: " + ex.Message);
-    return 1;
+    // Ask for channel
+    Console.Write("Channel: ");
+    string channel = Console.ReadLine();
+
+    SimpleChatAppLibrary.SimpleChatAppClient client = new(Prefs.GetString("ip", "https://chat.zaneharrison.com"), 
+        Prefs.GetString("username", "Chatter"), channel);
+
+    if (!client.TestConnection(out Exception ex)) {
+        Console.WriteLine("Connection failed: " + ex.Message + "\n");
+        continue;
+    }
+    Console.WriteLine("Connection successful.");
+
+    try {
+        FullGui.Start(client);
+    }
+    catch (ExitException) { }
+    
 }
-Console.WriteLine("Connection successful.");
-
-FullGui.Start(client);
-
-return 0;

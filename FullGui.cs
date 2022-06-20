@@ -9,13 +9,17 @@ public static class FullGui {
     private static IEnumerable<SimpleChatAppMessage>? _lastMessages;
     private static IEnumerable<string>? _lastUsers;
     private static SimpleChatAppLibrary.SimpleChatAppClient _client;
+    private static Thread _renderingThread;
+    private static bool _run = true;
 
     public static void Start(SimpleChatAppLibrary.SimpleChatAppClient client) {
         _client = client;
-        new Thread(ReaderThread).Start();
+        _renderingThread = new Thread(ReaderThread);
+        _renderingThread.Start();
 
         while (true) {
             string msg = PasswordTyping();
+            msg = Commands.Emoticons(msg);
             _currentlyTypedText = "";
             try {
                 _client.SendMessage(msg);
@@ -25,6 +29,12 @@ public static class FullGui {
             }
         }
 
+    }
+
+    public static void Disconnect() {
+        // stop the rendering thread
+        _renderingThread.Interrupt();
+        _run = false;
     }
 
     private static void ReaderThread() {
@@ -44,8 +54,14 @@ public static class FullGui {
     }
 
     private static void Cycle(SimpleChatAppLibrary.SimpleChatAppClient client) {
+
+        if (!_run) {
+            throw new ExitException();
+        }
+        
         // Get messages from server
-        IEnumerable<SimpleChatAppMessage> messages = client.GetMessages(15);
+        IEnumerable<SimpleChatAppMessage> messages = client.GetMessages(15, 0, 
+            bool.Parse(Prefs.GetString("online_status", "true")));
         IEnumerable<string> users = client.GetOnlineUsers();
         // If there are no new messages, return
         if (_lastMessages != null && MessagesEqual(_lastMessages, messages) && _lastUsers != null && MessagesEqual(_lastUsers, users)) {
@@ -62,7 +78,9 @@ public static class FullGui {
         IEnumerable<string> onlineUsers = client.GetOnlineUsers();
         // turn online users into a string
         string onlineUsersString = onlineUsers.Aggregate("", (current, user) => current + (user + ", "));
-        onlineUsersString = onlineUsersString[..^2];
+        if (onlineUsers.Count() != 0) {
+            onlineUsersString = onlineUsersString[..^2];
+        }
         Console.WriteLine("Users Online: " + onlineUsersString);
         Console.Write("Message: " + _currentlyTypedText);
     }
@@ -114,3 +132,5 @@ public static class FullGui {
 
 
 }
+
+public class ExitException : Exception { }
