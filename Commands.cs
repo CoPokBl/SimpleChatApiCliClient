@@ -3,15 +3,12 @@ namespace SimpleChatAppClient;
 public static class Commands {
 
     public static bool ParseCommand(string text) {
-<<<<<<< HEAD
         if (!text.StartsWith('/')) return false;
         
-=======
         if (!text.StartsWith('/')) {
             return false;
         }
-
->>>>>>> 72af7d4fd2e508f8a9b7c4d35da78098fb37803a
+        
         string[] words = text.Split(' ');
         string command = words[0].Remove(0,1);
         string[] args = new string[words.Length - 1];
@@ -64,12 +61,5 @@ public static class Commands {
             .Aggregate(text, (current, emoticon) => 
                 current.Replace("#" + emoticon.Key, emoticon.Value));
     }
-<<<<<<< HEAD
-    
-    
-    
-}
-=======
 
 }
->>>>>>> 72af7d4fd2e508f8a9b7c4d35da78098fb37803a
